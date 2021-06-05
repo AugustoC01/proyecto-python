@@ -10,13 +10,15 @@ class Aplicacion():
 		self.frame_et = Frame(self.raiz)
 		self.frame_cam = Frame(self.raiz)
 		self.frame_bot = Frame(self.raiz)
+		self.barra_menu = Menu(self.raiz)
+		self.raiz.config(menu = self.barra_menu)
 		self.frame_bot.pack(side = BOTTOM, pady = 5)
 		self.frame_et.pack(side = LEFT)
 		self.frame_cam.pack(side = LEFT)
 
 		# Declara base de datos y cursor
-		self.conexion = sqlite3.connect("Base_2")
-		self.cursor = self.conexion.cursor()
+		#self.conexion = sqlite3.connect("Base_2")
+		#self.cursor = self.conexion.cursor()
 
 		# Declara variables de control
 		self.id = IntVar()
@@ -45,6 +47,19 @@ class Aplicacion():
 		self.boton_leer = tkinter.Button(self.frame_bot, text = "Leer", command = self.leer_entrada)
 		self.boton_act = tkinter.Button(self.frame_bot, text = "Actualizar", command = self.actualizar_entrada)
 		self.boton_borrar = tkinter.Button(self.frame_bot, text = "Borrar", command = self.borrar_entrada)
+		
+		#MENU SUPERIOR
+		self.menu_bbdd = Menu(self.barra_menu, tearoff = 0)
+		self.menu_borrar = Menu(self.barra_menu, tearoff = 0)
+		self.menu_crud = Menu(self.barra_menu, tearoff = 0)
+		self.menu_ayuda = Menu(self.barra_menu, tearoff = 0)
+		self.barra_menu.add_cascade(label = "BBDD", menu = self.menu_bbdd)
+		self.menu_bbdd.add_command(label = "Conectar", command = lambda: self.conectar_base())
+		self.menu_bbdd.add_command(label = "Salir", command = lambda: self.ventana_mensaje(True, ""))
+		self.barra_menu.add_cascade(label = "Borrar", menu = self.menu_borrar)
+		self.menu_borrar.add_command(label = "Borrar campos", command = lambda: self.borrar_campos())
+		self.barra_menu.add_cascade(label = "CRUD", menu = self.menu_crud)
+		self.barra_menu.add_cascade(label = "Ayuda", menu = self.menu_ayuda)
 
 		self.et_id.pack(side = TOP, fill = BOTH, expand = True, padx = 10, pady = 5)
 		self.et_nombre.pack(side = TOP, fill = BOTH, expand = True, padx = 10, pady = 5)
@@ -62,15 +77,26 @@ class Aplicacion():
 		self.boton_leer.pack(side = LEFT, fill = BOTH, expand = True, padx = 10, pady = 5)
 		self.boton_act.pack(side = LEFT, fill = BOTH, expand = True, padx = 10, pady = 5)
 		self.boton_borrar.pack(side = LEFT, fill = BOTH, expand = True, padx = 10, pady = 5)
-		self.crear_tabla()
 		self.raiz.mainloop()
-		self.conexion.commit()
-		self.conexion.close()
-	
-	def crear_tabla(self):
+			
+	#CREA TODAS LAS VENTANAS EMERGENTES
+	def ventana_mensaje(self, salir, mensaje):
+		if salir:
+			r = mb.askquestion("Salir", "¿Desea salir de la aplicacion?")
+			if r == "yes":
+				self.conexion.commit()
+				self.conexion.close()
+				self.raiz.quit()
+		else:
+			mb.showinfo("BBDD", mensaje)
+
+	#SE CONECTA A LA BASE DE DATOS Y CREA LA TABLA
+	def conectar_base(self):
+		self.conexion = sqlite3.connect("Base_2")
+		self.cursor = self.conexion.cursor()
 		try:
 			self.cursor.execute('''
-			CREATE TABLE if not exists registro_personas(
+			CREATE TABLE registro_personas(
 			ID INTEGER PRIMARY KEY AUTOINCREMENT,
 			NOMBRE VARCHAR(20),
 			CLAVE VARCHAR(16),
@@ -78,39 +104,42 @@ class Aplicacion():
 			DIRECCION VARCHAR(30),
 			COMENTARIOS VARCHAR(50))
 			''')
+			self.ventana_mensaje(False, "Base de datos creada")
 		except:
-			print("La base de datos ha sido creada")
+			self.ventana_mensaje(False, "Base de datos conectada")
 
-	def ventana_mensaje(self, salir, mensaje):
-		if salir:
-			r = mb.askquestion("Salir", "¿Desea salir de la aplicacion?")
-			if r == "yes":
-				self.raiz.quit()
-		else:
-			mb.showinfo("BBDD", mensaje)
+	#VACIA LOS CAMPOS
+	def borrar_campos(self):
+		self.campo_id.delete(0, len(self.campo_id.get()))
+		self.campo_nombre.delete(0, len(self.campo_nombre.get()))
+		self.campo_clave.delete(0, len(self.campo_clave.get()))
+		self.campo_apellido.delete(0, len(self.campo_apellido.get()))
+		self.campo_direccion.delete(0, len(self.campo_direccion.get()))
+		self.campo_comentarios.delete(0, len(self.campo_comentarios.get())) 
 
+	#AGREGA UNA NUEVA ENTRADA AL REGISTRO
 	def crear_entrada(self):
 		lista_datos = (self.nombre.get(), self.clave.get(), self.apellido.get(), self.direccion.get(), self.comentarios.get())
 		self.cursor.execute('INSERT INTO registro_personas VALUES (NULL, ?, ?, ?, ?, ?)', lista_datos)
-		self.ventana_mensaje("Registro creado con exito")
+		self.borrar_campos()
+		self.ventana_mensaje(False, "Registro creado con exito")
 
+	#MUESTRA LOS DATOS DE UNA ENTRADA INDICANDO NUMERO DE ID
 	def leer_entrada(self):
 		try:
 			self.cursor.execute('SELECT * FROM registro_personas WHERE ID=:num_id', {'num_id': self.id.get()})
 			lista_datos = self.cursor.fetchone()
-			self.campo_nombre.delete(0, len(self.campo_nombre.get()))
-			self.campo_clave.delete(0, len(self.campo_clave.get()))
-			self.campo_apellido.delete(0, len(self.campo_apellido.get()))
-			self.campo_direccion.delete(0, len(self.campo_direccion.get()))
-			self.campo_comentarios.delete(0, len(self.campo_comentarios.get())) 
+			self.borrar_campos()
+			self.campo_id.insert(0, lista_datos[0])
 			self.campo_nombre.insert(0, lista_datos[1])
 			self.campo_clave.insert(0, lista_datos[2])
 			self.campo_apellido.insert(0, lista_datos[3])
 			self.campo_direccion.insert(0, lista_datos[4])
 			self.campo_comentarios.insert(0, lista_datos[5]) 
 		except:
-			self.ventana_mensaje("Ese registro no existe")
+			self.ventana_mensaje(False, "Ese registro no existe")
 
+	#ACTUALIZA DATOS DE UNA ENTRADA EXISTENTE
 	def actualizar_entrada(self):
 		lista_nuevos = [self.nombre.get(), self.clave.get(), self.apellido.get(), self.direccion.get(), self.comentarios.get()]
 		self.cursor.execute('''
@@ -121,21 +150,13 @@ class Aplicacion():
 			 				WHERE ID=:num_id''', 
 			 				{'nuevo_nombre': lista_nuevos[0], 'clave_nuevo': lista_nuevos[1], 'apellido_nuevo': lista_nuevos[2],
 			 				'direccion_nuevo': lista_nuevos[3], 'comentarios_nuevos': lista_nuevos[4], 'num_id': self.id.get()})
-		self.ventana_mensaje("Registro actualizado con exito")
+		self.ventana_mensaje(False, "Registro actualizado con exito")
 
+	#ELIMINA UNA ENTRADA DE LA BASE DE DATOS
 	def borrar_entrada(self):
 		self.cursor.execute('DELETE FROM registro_personas WHERE ID=:num_id', {'num_id': self.id.get()})
-		self.campo_nombre.delete(0, len(self.campo_nombre.get()))
-		self.campo_clave.delete(0, len(self.campo_clave.get()))
-		self.campo_apellido.delete(0, len(self.campo_apellido.get()))
-		self.campo_direccion.delete(0, len(self.campo_direccion.get()))
-		self.campo_comentarios.delete(0, len(self.campo_comentarios.get())) 
-		self.ventana_mensaje("Registro borrado con exito")
-
-		#POPUP DE CONFIRMACION DE CIERRE
-		# respuesta = self.MessageBox.askquestion("Salir", "¿Desea salir?")
-		# if resultado ==  "yes":
-		# 	self.raiz.quit()
+		self.borrar_campos()
+		self.ventana_mensaje(False, "Registro borrado con exito")
 
 def main():
     mi_app = Aplicacion()
