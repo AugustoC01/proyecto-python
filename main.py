@@ -27,6 +27,12 @@ class Aplicacion():
 		self.apellido = StringVar()
 		self.direccion = StringVar()
 		self.comentarios = StringVar()
+		self.inst = '''1. Selecciona la opcion Conectar, BBDD --> Conectar.
+					\n2. Para crear una nueva entrada, ingresa los datos y presiona crear.
+					\n3. Para leer una entrada existente, ingresa un num de id y presiona leer.
+					\n4. Para actualizar una entrada, ejecuta el paso 3, cambia los datos deseados y presiona act.
+					\n5. Para borrar una entrada, ejecuta el paso 3 y presiona en borrar.
+					'''
 
 		# Declara widgets de la self.raiz
         # Se incluye el widget de tipo Button 'Crear' 'Leer' 'Actualizar' 'Borrar' 
@@ -42,7 +48,7 @@ class Aplicacion():
 		self.campo_clave = tkinter.Entry(self.frame_cam, show = "*", textvariable = self.clave)
 		self.campo_apellido = tkinter.Entry(self.frame_cam, textvariable = self.apellido)
 		self.campo_direccion = tkinter.Entry(self.frame_cam, textvariable = self.direccion)
-		self.campo_comentarios = tkinter.Text(self.frame_cam, textvariable = self.comentarios)
+		self.campo_comentarios = tkinter.Entry(self.frame_cam, textvariable = self.comentarios)
 		self.boton_crear = tkinter.Button(self.frame_bot, text = "Crear", command = self.crear_entrada)
 		self.boton_leer = tkinter.Button(self.frame_bot, text = "Leer", command = self.leer_entrada)
 		self.boton_act = tkinter.Button(self.frame_bot, text = "Actualizar", command = self.actualizar_entrada)
@@ -59,15 +65,14 @@ class Aplicacion():
 		self.barra_menu.add_cascade(label = "Borrar", menu = self.menu_borrar)
 		self.menu_borrar.add_command(label = "Borrar campos", command = lambda: self.borrar_campos())
 		self.barra_menu.add_cascade(label = "CRUD", menu = self.menu_crud)
-		self.menu_crud.add_command(label = "Crear", command = lambda: self.crear_entrada)
-		self.menu_crud.add_command(label = "Leer", command = lambda: self.leer_entrada)
-		self.menu_crud.add_command(label = "Actualizar", command = lambda: self.actualizar_entrada)
-		self.menu_crud.add_command(label = "Borrar", command = lambda: self.borrar_entrada)
+		self.menu_crud.add_command(label = "Crear", command = lambda: self.crear_entrada())
+		self.menu_crud.add_command(label = "Leer", command = lambda: self.leer_entrada())
+		self.menu_crud.add_command(label = "Actualizar", command = lambda: self.actualizar_entrada())
+		self.menu_crud.add_command(label = "Borrar", command = lambda: self.borrar_entrada())
 		self.barra_menu.add_cascade(label = "Ayuda", menu = self.menu_ayuda)
 		self.menu_ayuda.add_command(label = "Licencia", command = lambda: self.ventana_mensaje(False, "Este programa es libre y gratuito :D"))
-		##TERMINAR ESTA LINEA CON MENSAJE DE ACERCA DE.....
-		self.menu_ayuda.add_command(label = "Acerca de", command = lambda: self.ventana_mensaje())
-
+		self.menu_ayuda.add_command(label = "Acerca de", command = lambda: self.ventana_mensaje(False, self.inst))
+		#ORDEN DE ELEMENTOS
 		self.et_id.pack(side = TOP, fill = BOTH, expand = True, padx = 10, pady = 5)
 		self.et_nombre.pack(side = TOP, fill = BOTH, expand = True, padx = 10, pady = 5)
 		self.et_clave.pack(side = TOP, fill = BOTH, expand = True, padx = 10, pady = 5)
@@ -85,13 +90,13 @@ class Aplicacion():
 		self.boton_act.pack(side = LEFT, fill = BOTH, expand = True, padx = 10, pady = 5)
 		self.boton_borrar.pack(side = LEFT, fill = BOTH, expand = True, padx = 10, pady = 5)
 		self.raiz.mainloop()
+		self.conexion.commit()
 			
 	#CREA TODAS LAS VENTANAS EMERGENTES
 	def ventana_mensaje(self, salir, mensaje):
 		if salir:
 			r = mb.askquestion("Salir", "¿Desea salir de la aplicacion?")
 			if r == "yes":
-				self.conexion.commit()
 				self.conexion.close()
 				self.raiz.quit()
 		else:
