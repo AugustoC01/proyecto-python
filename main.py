@@ -42,7 +42,7 @@ class Aplicacion():
 		self.campo_clave = tkinter.Entry(self.frame_cam, show = "*", textvariable = self.clave)
 		self.campo_apellido = tkinter.Entry(self.frame_cam, textvariable = self.apellido)
 		self.campo_direccion = tkinter.Entry(self.frame_cam, textvariable = self.direccion)
-		self.campo_comentarios = tkinter.Entry(self.frame_cam, textvariable = self.comentarios)
+		self.campo_comentarios = tkinter.Text(self.frame_cam, textvariable = self.comentarios)
 		self.boton_crear = tkinter.Button(self.frame_bot, text = "Crear", command = self.crear_entrada)
 		self.boton_leer = tkinter.Button(self.frame_bot, text = "Leer", command = self.leer_entrada)
 		self.boton_act = tkinter.Button(self.frame_bot, text = "Actualizar", command = self.actualizar_entrada)
@@ -59,7 +59,14 @@ class Aplicacion():
 		self.barra_menu.add_cascade(label = "Borrar", menu = self.menu_borrar)
 		self.menu_borrar.add_command(label = "Borrar campos", command = lambda: self.borrar_campos())
 		self.barra_menu.add_cascade(label = "CRUD", menu = self.menu_crud)
+		self.menu_crud.add_command(label = "Crear", command = lambda: self.crear_entrada)
+		self.menu_crud.add_command(label = "Leer", command = lambda: self.leer_entrada)
+		self.menu_crud.add_command(label = "Actualizar", command = lambda: self.actualizar_entrada)
+		self.menu_crud.add_command(label = "Borrar", command = lambda: self.borrar_entrada)
 		self.barra_menu.add_cascade(label = "Ayuda", menu = self.menu_ayuda)
+		self.menu_ayuda.add_command(label = "Licencia", command = lambda: self.ventana_mensaje(False, "Este programa es libre y gratuito :D"))
+		##TERMINAR ESTA LINEA CON MENSAJE DE ACERCA DE.....
+		self.menu_ayuda.add_command(label = "Acerca de", command = lambda: self.ventana_mensaje())
 
 		self.et_id.pack(side = TOP, fill = BOTH, expand = True, padx = 10, pady = 5)
 		self.et_nombre.pack(side = TOP, fill = BOTH, expand = True, padx = 10, pady = 5)
