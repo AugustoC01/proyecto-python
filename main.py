@@ -3,10 +3,12 @@ from tkinter import *
 from tkinter import messagebox as mb
 import sqlite3
 import os
+from ttkbootstrap import Style  #AGREGA ESTILO A TKINTER
 
 class Aplicacion():
 	def __init__(self):
 		self.raiz = Tk()
+		self.style = Style(theme = 'darkly')   #ELIGE EL TEMA QUE VOY A USAR
 		self.raiz.title("Base de datos")
 		self.raiz.geometry("350x300")
 		self.raiz.resizable(0, 0)
